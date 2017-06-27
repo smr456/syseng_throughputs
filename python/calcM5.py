@@ -50,7 +50,7 @@ def calcM5(hardware, system, atmos, title='m5'):
     for f in system:
         newFWHMeff[f] = lsstDefaults.FWHMeff(f) 
     #newFWHMeff = {'u':0.97, 'g':0.92, 'r':0.88, 'i':0.85, 'z':0.84, 'y':0.82}
-    newFWHMeff = {'u':0.77, 'g':0.73, 'r':0.70, 'i':0.67, 'z':0.65, 'y':0.63}
+    #newFWHMeff = {'u':0.77, 'g':0.73, 'r':0.70, 'i':0.67, 'z':0.65, 'y':0.63}
     for f in system:
         zpT[f] = system[f].calcZP_t(photParams_zp)
         m5[f] = SignalToNoise.calcM5(darksky, system[f], hardware[f], photParams, FWHMeff=newFWHMeff[f])
@@ -114,14 +114,14 @@ def calcM5(hardware, system, atmos, title='m5'):
             meetMin[f] = 'Y'
         else:
             meetMin[f] = 'N'
-        #timeD: additional visit time needed to meet Design spec. relative to planned time in band
-        #timeM: additional visit time needed to meet Min. spec. relative to planned time in band
+        #timeD: -1*(additional visit time needed to meet Design spec. relative to planned time in band)
+        #timeM: -1*(additional visit time needed to meet Min. spec. relative to planned time in band)
         if f == 'u':
-            timeD[f] = (10**((m5_SRD[f]-m5s[f])/2.5)-1)
-            timeM[f] = (10**((m5_SRD_min[f]-m5s[f])/2.5)-1)
+            timeD[f] = -(10**((m5_SRD[f] - m5s[f])/2.5)-1)
+            timeM[f] = -(10**((m5_SRD_min[f] - m5s[f])/2.5)-1)
         else:
-            timeD[f] = (10**((m5_SRD[f]-m5s[f])/1.25)-1)
-            timeM[f] = (10**((m5_SRD_min[f]-m5s[f])/1.25)-1)
+            timeD[f] = -(10**((m5_SRD[f] - m5s[f])/1.25)-1)
+            timeM[f] = -(10**((m5_SRD_min[f] - m5s[f])/1.25)-1)
         #total extra time needed over 10 years, relative to 10 years
         timeDT = timeD[f]*nVisit[f]/nVisitTot
         #total extra time needed over 10 years, relative to 10 years
@@ -133,9 +133,9 @@ def calcM5(hardware, system, atmos, title='m5'):
         print '%s & %6.1f & %6.1f & %s & %6.1f & %s \\\\ \\hline'\
            %(f, m5s[f], m5_SRD[f], meetDesign[f], m5_SRD_min[f], meetMin[f])
     for f in ('u', 'g' ,'r', 'i', 'z', 'y'):
-        print '%s & %6.1f & %6.1f & %s & %6.0f & %6.1f & %s & %6.0f \\\\ \\hline'\
+        print '%s & %6.1f & %6.1f & %s & %+6.0f & %6.1f & %s & %+6.0f \\\\ \\hline'\
            %(f, m5s[f], m5_SRD[f], meetDesign[f], timeD[f]*100, m5_SRD_min[f], meetMin[f], timeM[f]*100)
-    print 'timeDSum = %8.1f %%, timeMSum = %8.1f %%' %(timeDSum*100, timeMSum*100)
+    print 'timeDSum = %8.0f %%, timeMSum = %8.0f %%' %(timeDSum*100, timeMSum*100)
 
     for f in filterlist:
         m5_cm = Cm[f] + 0.5*(skyMag[f] - 21.0) + 2.5*np.log10(0.7/lsstDefaults.FWHMeff(f))
